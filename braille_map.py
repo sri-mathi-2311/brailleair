@@ -220,7 +220,12 @@ def encode_text(text: str, lang: str = "en") -> List[Dict]:
                 'off_ms': DEFAULT_OFF_MS,
             })
         else:
-            logger.warning(f"Unmapped character: '{ch}' (U+{ord(ch):04X})")
-            # Skip unmapped characters but log them
+            logger.warning(f"Unknown char: {ch} (U+{ord(ch):04X})")
+            result.append({
+                'char': ch,
+                'dots': [1, 0, 1, 0, 1],
+                'on_ms': DEFAULT_ON_MS,
+                'off_ms': DEFAULT_OFF_MS,
+            })
 
     return result

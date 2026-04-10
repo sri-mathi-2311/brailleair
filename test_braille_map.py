@@ -198,12 +198,14 @@ class TestEncodeText:
         assert result[0]['char'] == 'அ'
         assert result[0]['dots'] == [1, 0, 0, 0, 0]
 
-    def test_unmapped_char_skipped(self):
+    def test_unmapped_char_double_buzz(self):
         result = encode_text("a@b")
-        # '@' is unmapped, should be skipped
-        assert len(result) == 2
+        # '@' is unmapped, should produce [1, 0, 1, 0, 1]
+        assert len(result) == 3
         assert result[0]['char'] == 'a'
-        assert result[1]['char'] == 'b'
+        assert result[1]['char'] == '@'
+        assert result[1]['dots'] == [1, 0, 1, 0, 1]
+        assert result[2]['char'] == 'b'
 
     def test_empty_string(self):
         result = encode_text("")
@@ -214,3 +216,8 @@ class TestEncodeText:
         assert ENGLISH_BRAILLE['a'] == [1, 0, 0, 0, 0]
         assert ENGLISH_BRAILLE['b'] == [1, 1, 0, 0, 0]
         assert ENGLISH_BRAILLE['c'] == [1, 0, 0, 1, 0]
+
+    def test_day8_specific_assertions(self):
+        assert len(encode_text('hello')) == 5
+        assert len(encode_text('hi there')) == 8 # includes space
+        assert all(len(d['dots']) == 5 for d in encode_text('test'))
