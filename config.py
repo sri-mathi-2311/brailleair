@@ -2,7 +2,7 @@
 # Central configuration for BarileAir
 
 # Tesseract OCR
-TESSERACT_CMD = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Windows path; adjust if needed
+TESSERACT_CMD = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 SUPPORTED_LANGS = ["eng", "tam"]
 
 # BLE Device
