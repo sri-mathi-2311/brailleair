@@ -136,7 +136,7 @@ def run(state: dict) -> dict:
     # Choose PSM based on retry attempt
     # First try: psm 6 (uniform block). On retry: psm 3 (auto-detect layout)
     psm = 6 if retry_count == 0 else 3
-    lang = state.get("lang", "") or "eng"
+    lang = state.get("lang", "") or "tam+eng"
 
     print(f"[OCR] Attempt {retry_count + 1} (psm={psm}, lang={lang})")
 
