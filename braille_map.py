@@ -10,12 +10,14 @@ from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
+import config
+
 # ---------------------------------------------------------------------------
 # Timing defaults (milliseconds)
 # ---------------------------------------------------------------------------
-DEFAULT_ON_MS = 300    # how long pins stay raised per character
-DEFAULT_OFF_MS = 150   # gap between characters
-SPACE_GAP_MS = 700     # extended gap for space character
+DEFAULT_ON_MS = config.VIBRATE_ON_MS    # how long pins stay raised per character
+DEFAULT_OFF_MS = config.VIBRATE_OFF_MS   # gap between characters
+SPACE_GAP_MS = config.WORD_GAP_MS     # extended gap for space character
 
 # ---------------------------------------------------------------------------
 # 1. English a–z Braille dict

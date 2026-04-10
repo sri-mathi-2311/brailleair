@@ -20,7 +20,15 @@ def _grayscale(img: np.ndarray) -> np.ndarray:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     else:
         gray = img  # already grayscale
-    logger.info("[PREPROCESS] Grayscale applied")
+
+    # Day 10 Fix: Apply CLAHE to resolve noisy background / poor contrast
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    gray = clahe.apply(gray)
+    
+    # Denoise with modest median blur
+    gray = cv2.medianBlur(gray, 3)
+
+    logger.info("[PREPROCESS] Grayscale applied with CLAHE and Median Blur")
     return gray
 
 

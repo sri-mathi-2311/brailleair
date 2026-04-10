@@ -12,6 +12,7 @@ import numpy as np
 
 # Ensure project root is in path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import config
 from config import TESSERACT_CMD
 
 # Configure Tesseract path
@@ -20,8 +21,8 @@ pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
 logger = logging.getLogger(__name__)
 
 # Max retries from config (image spec says MAX_RETRY=2)
-MAX_RETRY = 2
-CONFIDENCE_THRESHOLD = 60
+MAX_RETRY = config.MAX_RETRY
+CONFIDENCE_THRESHOLD = config.OCR_CONF_THRESHOLD
 
 
 # ---------------------------------------------------------------------------

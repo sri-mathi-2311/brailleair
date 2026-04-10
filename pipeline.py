@@ -21,11 +21,11 @@ class BrailleState(TypedDict):
     error: str               # error message if any
 
 
-# Import real agents
+import config
 from agents import capture, preprocess, ocr, translate, encode, vibrate
 
 def capture_node(state: BrailleState) -> BrailleState:
-    return capture.run(mode="FILE", state=state)
+    return capture.run(mode=config.CAMERA_MODE, state=state)
 
 def preprocess_node(state: BrailleState) -> BrailleState:
     return preprocess.run(state)
