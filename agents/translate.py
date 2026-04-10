@@ -13,8 +13,9 @@ import fallback_dict
 try:
     from googletrans import Translator
     HAS_GOOGLETRANS = True
-except ImportError:
+except Exception as e:
     HAS_GOOGLETRANS = False
+    print(f"[TRANSLATE-INIT] Warning: googletrans unavailable ({e})")
 
 logger = logging.getLogger(__name__)
 

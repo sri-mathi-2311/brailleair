@@ -24,6 +24,14 @@ def _capture_file(state: dict) -> dict:
     """
     global _file_index
 
+    # If image_path is already provided via state, use it directly
+    if state.get("image_path"):
+        selected = state["image_path"]
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        logger.info(f"[{timestamp}] FILE capture: {selected} (provided via --image)")
+        print(f"[CAPTURE-FILE] [{timestamp}] Loaded provided image: {selected}")
+        return state
+
     image_dir = Path("test_images")
     extensions = ("*.png", "*.jpg", "*.jpeg", "*.bmp", "*.tiff")
     images = []

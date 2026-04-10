@@ -21,44 +21,26 @@ class BrailleState(TypedDict):
     error: str               # error message if any
 
 
-# ---------------------------------------------------------------------------
-# 2. Placeholder nodes — each prints its name and returns state unchanged
-# ---------------------------------------------------------------------------
-def capture_node(state: BrailleState) -> BrailleState:
-    """Load / capture the input image."""
-    print("[NODE] capture")
-    return state
+# Import real agents
+from agents import capture, preprocess, ocr, translate, encode, vibrate
 
+def capture_node(state: BrailleState) -> BrailleState:
+    return capture.run(mode="FILE", state=state)
 
 def preprocess_node(state: BrailleState) -> BrailleState:
-    """Clean and enhance the image for OCR."""
-    print("[NODE] preprocess")
-    return state
-
+    return preprocess.run(state)
 
 def ocr_node(state: BrailleState) -> BrailleState:
-    """Run Tesseract OCR on the cleaned image."""
-    print("[NODE] ocr")
-    # Increment retry_count so conditional edge can track attempts
-    return {**state, "retry_count": state.get("retry_count", 0) + 1}
-
+    return ocr.run(state)
 
 def translate_node(state: BrailleState) -> BrailleState:
-    """Detect language and optionally translate."""
-    print("[NODE] translate")
-    return state
-
+    return translate.run(state)
 
 def encode_node(state: BrailleState) -> BrailleState:
-    """Convert final text to 5-bit Braille sequences."""
-    print("[NODE] encode")
-    return state
-
+    return encode.run(state)
 
 def vibrate_node(state: BrailleState) -> BrailleState:
-    """Send Braille vibration sequence to BLE device."""
-    print("[NODE] vibrate")
-    return state
+    return vibrate.run(state)
 
 
 # ---------------------------------------------------------------------------
