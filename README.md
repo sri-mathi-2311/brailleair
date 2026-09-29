@@ -25,22 +25,54 @@ The system leverages a linear state-driven graph powered by LangGraph, operating
 - Generic ESP32 or BLE Microcontroller
 - 3D Printed Hand-mount housing
 
-## Setup
-1. **Dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. **Tesseract Configuration:**
-   Install Tesseract OCR and confirm `TESSERACT_CMD` located in `config.py`.
-3. **Environment Limits:**
-   Configure limits (`OCR_CONF_THRESHOLD`: 60, `MAX_RETRY`: 2) within `config.py`.
+## Setup and Run
+These commands assume Windows PowerShell and Python 3.12 or newer.
 
-## Usage
-Run the main pipeline loop via CLI to perform an end-to-end translation.
+### 1. Set up Python
+```powershell
+cd D:\barileair
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install fastapi uvicorn requests pydantic bleak langdetect langgraph pillow pytesseract opencv-python numpy typing-extensions pytest googletrans==4.0.0-rc1 pypdf python-docx
+```
 
-```bash
+Install Tesseract OCR and confirm `TESSERACT_CMD` in `config.py` points to the installed executable. The default path is `C:\Program Files\Tesseract-OCR\tesseract.exe`.
+
+### 2. Start the backend API
+In a terminal with the virtual environment activated:
+```powershell
+cd D:\barileair
+python web_api.py
+```
+
+The API runs at `http://localhost:8000`.
+
+### 3. Start the frontend dashboard
+Open a second terminal:
+```powershell
+cd D:\barileair\frontend
+npm install
+npm run dev
+```
+
+Open the Vite URL printed in the terminal, normally `http://localhost:5173`.
+
+### 4. Run the CLI pipeline
+```powershell
+cd D:\barileair
+.\.venv\Scripts\Activate.ps1
 python main.py --mode FILE --image test_images/test_english_1.png
 ```
+
+### 5. Run tests
+```powershell
+cd D:\barileair
+.\.venv\Scripts\Activate.ps1
+python -m pytest
+```
+
+The runtime settings, including `OCR_CONF_THRESHOLD` and `MAX_RETRY`, are defined in `config.py`.
 
 ## Benchmark
 - **Test Set:** 5 mixed configuration images (English literal, Tamil native, Mixed formats). *(Target scale: 30 images)*
