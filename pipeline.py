@@ -5,6 +5,7 @@
 from typing import Any
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, END
+import config
 
 # ---------------------------------------------------------------------------
 # 1. BrailleState TypedDict
@@ -21,8 +22,8 @@ class BrailleState(TypedDict):
     error: str               # error message if any
 
 
-import config
-from agents import capture, preprocess, ocr, translate, encode, vibrate
+# Import real agents
+from agents import capture, preprocess, ocr, translate, encode, vibrate, refine
 
 def capture_node(state: BrailleState) -> BrailleState:
     return capture.run(mode=config.CAMERA_MODE, state=state)
@@ -32,6 +33,9 @@ def preprocess_node(state: BrailleState) -> BrailleState:
 
 def ocr_node(state: BrailleState) -> BrailleState:
     return ocr.run(state)
+
+def refine_node(state: BrailleState) -> BrailleState:
+    return refine.run(state)
 
 def translate_node(state: BrailleState) -> BrailleState:
     return translate.run(state)
@@ -65,6 +69,7 @@ def build_graph() -> StateGraph:
     graph.add_node("capture", capture_node)
     graph.add_node("preprocess", preprocess_node)
     graph.add_node("ocr", ocr_node)
+    graph.add_node("refine", refine_node)
     graph.add_node("translate", translate_node)
     graph.add_node("encode", encode_node)
     graph.add_node("vibrate", vibrate_node)
@@ -82,11 +87,12 @@ def build_graph() -> StateGraph:
         should_retry,
         {
             "retry": "preprocess",    # loop back
-            "continue": "translate",  # proceed
+            "continue": "refine",     # proceed to smart refinement
         },
     )
 
     # Continue linear path
+    graph.add_edge("refine", "translate")
     graph.add_edge("translate", "encode")
     graph.add_edge("encode", "vibrate")
     graph.add_edge("vibrate", END)

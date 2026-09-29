@@ -1,5 +1,7 @@
-# fallback_dict.py
-# Offline fallback dictionary for English -> Tamil Translation
+# fallback_dict.py  
+# Offline dictionary for reference ONLY - NO TRANSLATION
+# This dict is NOT USED in the pipeline
+# The system detects language and keeps text in original language without translation
 
 FALLBACK_DICT = {
     "hello": "வணக்கம்",
@@ -46,13 +48,6 @@ FALLBACK_DICT = {
     "technology": "தொழில்நுட்பம்"
 }
 
-def translate(text: str) -> str:
-    """Fallback translation using a simple dictionary approach."""
-    words = text.split()
-    translated_words = []
-    for w in words:
-        # Keep punctuation but lower to match Dict
-        key = w.lower().strip(".,!?;:\"'")
-        t = FALLBACK_DICT.get(key, w) # fallback to original if not found
-        translated_words.append(t)
-    return " ".join(translated_words)
+# REMOVED: translate() function
+# The pipeline no longer uses dictionary-based translation
+# Instead: Language is detected and text is kept in original language for Braille encoding

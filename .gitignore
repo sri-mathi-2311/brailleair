@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.db-journal
+frontend/node_modules/
+frontend/dist/
+.pytest_cache/
+preprocessed/*_preprocessed.png
+web_uploads/*
+!web_uploads/.gitkeep

@@ -12,6 +12,13 @@ import ble_client
 
 logger = logging.getLogger(__name__)
 
+def _safe_preview(text: str) -> str:
+    try:
+        text.encode(sys.stdout.encoding or "utf-8")
+        return text
+    except Exception:
+        return text.encode("ascii", errors="replace").decode("ascii")
+
 def run(state: dict) -> dict:
     """
     VibrateAgent terminal simulation loop.
@@ -32,7 +39,7 @@ def run(state: dict) -> dict:
         char = item.get("char", "")
         
         # Log character intent
-        print(f"Char: '{char}' ", end="")
+        print(f"Char: '{_safe_preview(char)}' ", end="")
         
         # Delegate to ble_client sim
         ble_client.send_pattern(dots, on_ms, off_ms)

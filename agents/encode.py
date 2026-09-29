@@ -12,6 +12,14 @@ from braille_map import encode_text
 
 logger = logging.getLogger(__name__)
 
+def _safe_preview(text: str) -> str:
+    """Return a console-safe preview for Windows terminals."""
+    try:
+        text.encode(sys.stdout.encoding or "utf-8")
+        return text
+    except Exception:
+        return text.encode("ascii", errors="replace").decode("ascii")
+
 def run(state: dict) -> dict:
     """
     EncodeAgent entry point.
@@ -26,8 +34,8 @@ def run(state: dict) -> dict:
     final_text = state.get("final_text", "")
     
     # We map 'tamil'/'eng' to 'ta'/'en' for encode_text
-    lang_val = state.get("lang", "english").lower()
-    if lang_val == "tamil":
+    lang_val = state.get("lang", "en").lower()
+    if lang_val in ("tamil", "ta"):
         lang_code = "ta"
     else:
         lang_code = "en"
@@ -36,7 +44,7 @@ def run(state: dict) -> dict:
         state["vibration_seq"] = []
         return state
 
-    print(f"[ENCODE] Encoding text ({lang_code}): {final_text[:50]}...")
+    print(f"[ENCODE] Encoding text ({lang_code}): {_safe_preview(final_text[:50])}...")
     
     # encode_text handles spaces (700ms gap) and unknown chars ([1,0,1,0,1] double buzz)
     seq = encode_text(final_text, lang=lang_code)

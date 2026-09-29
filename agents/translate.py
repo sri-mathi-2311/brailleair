@@ -13,21 +13,38 @@ import fallback_dict
 try:
     from googletrans import Translator
     HAS_GOOGLETRANS = True
+    TRANSLATE_INIT_ERROR = ""
 except Exception as e:
     HAS_GOOGLETRANS = False
-    print(f"[TRANSLATE-INIT] Warning: googletrans unavailable ({e})")
+    TRANSLATE_INIT_ERROR = str(e)
 
 logger = logging.getLogger(__name__)
+
+def _safe_preview(text: str) -> str:
+    """Return a console-safe version of text for Windows cp1252 terminals."""
+    try:
+        text.encode(sys.stdout.encoding or "utf-8")
+        return text
+    except Exception:
+        return text.encode("ascii", errors="replace").decode("ascii")
 
 def run(state: dict) -> dict:
     """
     TranslateAgent entry point.
-    Detects language -> if English, translates to Tamil -> if Tamil, skips translation.
+    Language Detection ONLY - NO TRANSLATION.
+    
+    For English: Keep as English, convert to Braille
+    For Tamil: Keep as Tamil, convert to Braille
+    
     Args:
         state: BrailleState dict containing raw_text.
     Returns:
-        Updated state with final_text translated to Tamil.
+        Updated state with lang and final_text set (NO translation).
     """
+    if state.get("llm_processed"):
+        logger.info("[TRANSLATE] LLM already processed. Skipping local logic.")
+        return state
+
     raw_text = state.get("raw_text", "")
     
     if not raw_text.strip():
@@ -35,46 +52,24 @@ def run(state: dict) -> dict:
         state["lang"] = ""
         return state
 
-    # 1. Language detection
+    # 1. Language detection ONLY - DO NOT TRANSLATE
     try:
         lang_code = detect(raw_text)
     except Exception as e:
         logger.warning(f"[TRANSLATE] langdetect failed: {e}")
         lang_code = "en" # default to english if detection fails
 
-    if lang_code == "ta":
-        state["lang"] = "tamil"
-        state["final_text"] = raw_text
-        print("[TRANSLATE] Detected Tamil -> Skipping translation")
-        return state
-
-    state["lang"] = "english"
-    print(f"[TRANSLATE] Detected {lang_code.upper()} -> Translating to Tamil...")
-
-    # 2. Translation with offline fallback
-    translated_text = ""
-    success = False
+    # Set language and keep original text - NO TRANSLATION
+    if lang_code in ("ta", "tam"):
+        state["lang"] = "ta"
+        print("[TRANSLATE] Detected Tamil -> Keep as Tamil (NO translation)")
+    else:
+        state["lang"] = "en"
+        print(f"[TRANSLATE] Detected {lang_code.upper()} -> Keep as {lang_code.upper()} (NO translation)")
     
-    if HAS_GOOGLETRANS:
-        try:
-            translator = Translator()
-            result = translator.translate(raw_text, dest='ta')
-            translated_text = result.text
-            success = True
-            print("[TRANSLATE] Online translation successful.")
-        except Exception as e:
-            logger.warning(f"[TRANSLATE] Online translation failed: {e}")
-            success = False
+    # Keep original text - DO NOT TRANSLATE
+    state["final_text"] = raw_text
     
-    if not success:
-        # Fallback offline dictionary
-        print("[TRANSLATE] Using offline fallback dictionary.")
-        translated_text = fallback_dict.translate(raw_text)
-
-    # 3. Output
-    state["final_text"] = translated_text
-    print(f"[TRANSLATE] Final Tamil: {translated_text}")
-
     return state
 
 if __name__ == "__main__":

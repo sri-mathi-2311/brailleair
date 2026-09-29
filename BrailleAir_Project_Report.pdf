@@ -1,0 +1,310 @@
+    %PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 3 /Kids [ 4 0 R 6 0 R 8 0 R ] >>
+endobj
+3 0 obj
+<< /Length 2181 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+50 790 Td
+(BrailleAir Project Report) Tj
+T*
+() Tj
+T*
+(Project name: BrailleAir) Tj
+T*
+(Report date: 11 April 2026) Tj
+T*
+(Report style: Simple English) Tj
+T*
+() Tj
+T*
+(1. Project Summary) Tj
+T*
+(BrailleAir is an assistive technology project. It takes an image of printed text,) Tj
+T*
+(reads the text with OCR, changes the text into Tamil, converts the result into a) Tj
+T*
+(Braille-like 5-bit vibration pattern, and then sends or simulates vibration commands) Tj
+T*
+(for a tactile device. The project also includes a web API and a React frontend.) Tj
+T*
+() Tj
+T*
+(2. What The Project Uses) Tj
+T*
+(- Python backend) Tj
+T*
+(- LangGraph state pipeline) Tj
+T*
+(- OpenCV for image preprocessing) Tj
+T*
+(- Tesseract OCR for English and Tamil text reading) Tj
+T*
+(- Langdetect for language detection) Tj
+T*
+(- googletrans for online translation when available) Tj
+T*
+(- Local fallback dictionary for offline translation) Tj
+T*
+(- Gemini LLM integration through google.generativeai) Tj
+T*
+(- Bleak for Bluetooth Low Energy support) Tj
+T*
+(- FastAPI backend) Tj
+T*
+(- React, Vite, Axios, Framer Motion, and Lucide React frontend) Tj
+T*
+(- Pytest for tests) Tj
+T*
+() Tj
+T*
+(3. Main Working Flow) Tj
+T*
+(Step 1: Capture image from file, webcam, or planned BLE source.) Tj
+T*
+(Step 2: Preprocess image with grayscale, denoise, deskew, threshold, and resize.) Tj
+T*
+(Step 3: OCR reads the text.) Tj
+T*
+(Step 4: Retry OCR if the first result is empty.) Tj
+T*
+(Step 5: Optional LLM refine step with Gemini.) Tj
+T*
+(Step 6: Local translation path if LLM is skipped or fails.) Tj
+T*
+(Step 7: Encode final text into a vibration sequence.) Tj
+T*
+(Step 8: Simulate or send vibration commands to hardware.) Tj
+T*
+() Tj
+T*
+(4. What Result The Project Gives) Tj
+T*
+(The expected result is:) Tj
+T*
+(image text -> Tamil text -> vibration sequence for a tactile device.) Tj
+T*
+() Tj
+T*
+(In local verification on a sample English image, the pipeline:) Tj
+T*
+(- read the text successfully,) Tj
+T*
+(- produced translated output through the offline fallback path,) Tj
+T*
+(- generated 153 vibration commands,) Tj
+T*
+(- ran the vibration sequence in terminal simulation mode.) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 3 0 R >>
+endobj
+5 0 obj
+<< /Length 2286 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+50 790 Td
+(So the main project idea works as a prototype.) Tj
+T*
+() Tj
+T*
+(5. Does It Work Offline?) Tj
+T*
+(Answer: Partly yes.) Tj
+T*
+(- OCR and preprocessing can work offline if Tesseract is installed.) Tj
+T*
+(- The local fallback dictionary gives a basic offline translation path.) Tj
+T*
+(- The vibration simulator works offline.) Tj
+T*
+(- BLE capture is not finished yet.) Tj
+T*
+(- Real BLE sending code exists, but the main pipeline currently uses simulation.) Tj
+T*
+() Tj
+T*
+(Offline conclusion:) Tj
+T*
+(The core demo works offline in a limited way, but full hardware support is not complete.) Tj
+T*
+() Tj
+T*
+(6. Does It Work Online?) Tj
+T*
+(Answer: Partly yes.) Tj
+T*
+(- A FastAPI backend exists.) Tj
+T*
+(- API routes such as / and /upload-book are present.) Tj
+T*
+(- A React frontend dashboard exists.) Tj
+T*
+(- But the frontend build failed locally because of a Vite/SWC process error.) Tj
+T*
+(- The online translation library is also not healthy in the current setup.) Tj
+T*
+() Tj
+T*
+(Online conclusion:) Tj
+T*
+(The online architecture exists, but it is not fully stable in the current environment.) Tj
+T*
+() Tj
+T*
+(7. Is LLM Integrated?) Tj
+T*
+(Answer: Yes.) Tj
+T*
+(- The file agents/refine.py integrates Gemini through google.generativeai.) Tj
+T*
+(- config.py has USE_LLM = True.) Tj
+T*
+(- The LLM step is placed before the normal translation step.) Tj
+T*
+(- It is meant to fix OCR mistakes and translate to Tamil.) Tj
+T*
+() Tj
+T*
+(Current LLM status:) Tj
+T*
+(- The key in config.py is only a placeholder.) Tj
+T*
+(- The Gemini package used here is deprecated.) Tj
+T*
+(- In testing, the LLM step timed out and did not complete successfully.) Tj
+T*
+() Tj
+T*
+(LLM conclusion:) Tj
+T*
+(LLM integration exists in code, but it is not working correctly in the current setup.) Tj
+T*
+() Tj
+T*
+(8. Important Problems Found) Tj
+T*
+(- After local translation, the language state stays as english, so Tamil text is encoded) Tj
+T*
+(  through the English path. This causes many Tamil characters to fall back to a default buzz) Tj
+T*
+(  pattern instead of using proper Tamil mapping.) Tj
+T*
+(- The Gemini key is not configured for real use.) Tj
+T*
+(- googletrans fails because of a compatibility problem with httpcore.) Tj
+T*
+(- BLE capture mode is still a stub.) Tj
+T*
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 1559 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+50 790 Td
+(- The frontend did not build successfully in this local environment.) Tj
+T*
+(- Windows console output can fail on Tamil text unless UTF-8 output is enabled.) Tj
+T*
+() Tj
+T*
+(9. Verification Results) Tj
+T*
+(- Tesseract executable found: Yes) Tj
+T*
+(- Core Python dependencies found: Yes) Tj
+T*
+(- Pytest result: 34 tests passed) Tj
+T*
+(- Backend sample pipeline run: Success in offline fallback mode) Tj
+T*
+(- FastAPI route structure: Present) Tj
+T*
+(- Frontend build: Failed locally) Tj
+T*
+(- LLM runtime check: Integrated but not operational now) Tj
+T*
+() Tj
+T*
+(10. Benchmark Note) Tj
+T*
+(The existing benchmark_results.csv file shows mixed OCR quality.) Tj
+T*
+(One sample scored about 56.25 percent, another 10.53 percent, mixed text 37.5 percent,) Tj
+T*
+(and Tamil samples 0 percent. This shows the project idea is working, but OCR quality and) Tj
+T*
+(Tamil handling still need improvement.) Tj
+T*
+() Tj
+T*
+(11. Final Conclusion) Tj
+T*
+(BrailleAir is a meaningful project with a clear goal. It already has a full processing) Tj
+T*
+(pipeline,) Tj
+T*
+(a web API, a frontend, a Braille encoding layer, and optional AI integration.) Tj
+T*
+() Tj
+T*
+(The project is partially working.) Tj
+T*
+(The offline core demo works in a basic form.) Tj
+T*
+(The online structure exists, but it is not fully reliable in the current environment.) Tj
+T*
+(The LLM is integrated, but it is not working correctly now.) Tj
+T*
+() Tj
+T*
+(In simple words:) Tj
+T*
+(BrailleAir is a good working prototype, not a finished production-ready system.) Tj
+T*
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000150 00000 n 
+0000002383 00000 n 
+0000002509 00000 n 
+0000004847 00000 n 
+0000004973 00000 n 
+0000006584 00000 n 
+0000006710 00000 n 
+trailer
+<< /Size 10 /Root 9 0 R >>
+startxref
+6759
+%%EOF

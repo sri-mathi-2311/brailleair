@@ -107,7 +107,44 @@ def _capture_webcam(state: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# 3. BLE mode stub — raises NotImplementedError (real BLE in Day 11)
+# 3. URL mode — fetch from ESP32 camera URL
+# ---------------------------------------------------------------------------
+def _capture_url(state: dict) -> dict:
+    """
+    Fetch an image from the ESP32 camera URL defined in config.
+    Saves it to a temp file.
+    """
+    import requests
+    import config
+
+    url = config.ESP32_CAMERA_URL
+    print(f"[CAPTURE-URL] Fetching from {url}...")
+
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        output_path = os.path.join("web_uploads", "esp32_capture.jpg")
+        os.makedirs("web_uploads", exist_ok=True)
+        
+        with open(output_path, "wb") as f:
+            f.write(response.content)
+            
+        state["image_path"] = output_path
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        logger.info(f"[{timestamp}] URL capture saved: {output_path}")
+        print(f"[CAPTURE-URL] [{timestamp}] Saved: {output_path}")
+        
+    except Exception as e:
+        state["error"] = f"Failed to capture from ESP32: {str(e)}"
+        logger.error(state["error"])
+        print(f"[CAPTURE-URL] Error: {state['error']}")
+
+    return state
+
+
+# ---------------------------------------------------------------------------
+# 4. BLE mode stub — raises NotImplementedError (real BLE in Day 11)
 # ---------------------------------------------------------------------------
 def _capture_ble(state: dict) -> dict:
     """
@@ -157,6 +194,8 @@ def run(mode: str = "FILE", state: dict = None) -> dict:
         return _capture_file(state)
     elif mode == "WEBCAM":
         return _capture_webcam(state)
+    elif mode == "URL":
+        return _capture_url(state)
     elif mode == "BLE":
         return _capture_ble(state)
     else:

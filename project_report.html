@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BrailleAir Project Report</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 22mm;
+    }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: #222;
+      line-height: 1.5;
+      font-size: 12pt;
+    }
+    h1, h2, h3 {
+      color: #123b5d;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 24pt;
+      margin-top: 0;
+      border-bottom: 2px solid #d9e7f2;
+      padding-bottom: 10px;
+    }
+    h2 {
+      font-size: 16pt;
+      margin-top: 22px;
+    }
+    p {
+      margin: 8px 0;
+    }
+    ul {
+      margin: 8px 0 8px 22px;
+    }
+    li {
+      margin: 4px 0;
+    }
+    .meta {
+      background: #f4f8fb;
+      border: 1px solid #d9e7f2;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 14px 0 18px 0;
+    }
+    .good {
+      color: #136c2e;
+      font-weight: 600;
+    }
+    .warn {
+      color: #9a5a00;
+      font-weight: 600;
+    }
+    .bad {
+      color: #9d1c1c;
+      font-weight: 600;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #cfd9e2;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef5fa;
+    }
+    .small {
+      font-size: 10.5pt;
+      color: #555;
+    }
+    code {
+      font-family: Consolas, monospace;
+      background: #f6f8fa;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>BrailleAir Project Report</h1>
+
+  <div class="meta">
+    <p><strong>Project name:</strong> BrailleAir</p>
+    <p><strong>Report date:</strong> 11 April 2026</p>
+    <p><strong>Report style:</strong> Simple English</p>
+    <p><strong>Goal:</strong> Check what the project uses, what result it gives, how it works, whether it works offline and online, and whether an LLM is integrated.</p>
+  </div>
+
+  <h2>1. Project Summary</h2>
+  <p>
+    BrailleAir is a Python-based assistive technology project. It takes an image of printed text,
+    reads the text using OCR, changes the text into Tamil, converts the result into a Braille-like
+    5-bit vibration pattern, and then sends or simulates vibration commands for a tactile device.
+  </p>
+  <p>
+    The project also includes a web API and a React frontend dashboard so a user can upload a page image
+    and view the converted result.
+  </p>
+
+  <h2>2. What The Project Uses</h2>
+  <ul>
+    <li>Python for the main backend and processing pipeline.</li>
+    <li>LangGraph to connect the pipeline steps as a state graph.</li>
+    <li>OpenCV for image preprocessing.</li>
+    <li>Tesseract OCR with English and Tamil language support.</li>
+    <li>Langdetect for language detection.</li>
+    <li>Google Translate library (<code>googletrans</code>) for online translation when available.</li>
+    <li>A local fallback dictionary for simple offline English-to-Tamil translation.</li>
+    <li>Google Gemini code integration through <code>google.generativeai</code> for optional LLM-based refinement.</li>
+    <li>Bleak for Bluetooth Low Energy communication.</li>
+    <li>FastAPI for the backend web server.</li>
+    <li>React, Vite, Axios, Framer Motion, and Lucide React for the frontend dashboard.</li>
+    <li>Pytest for unit testing.</li>
+  </ul>
+
+  <h2>3. Main Files and Their Roles</h2>
+  <table>
+    <tr>
+      <th>File or folder</th>
+      <th>Purpose</th>
+    </tr>
+    <tr>
+      <td><code>main.py</code></td>
+      <td>Starts the full pipeline from the command line.</td>
+    </tr>
+    <tr>
+      <td><code>pipeline.py</code></td>
+      <td>Builds the LangGraph flow: capture, preprocess, OCR, refine, translate, encode, and vibrate.</td>
+    </tr>
+    <tr>
+      <td><code>agents/</code></td>
+      <td>Contains the logic for each processing step.</td>
+    </tr>
+    <tr>
+      <td><code>braille_map.py</code></td>
+      <td>Maps English and some Tamil characters into 5-bit actuator patterns.</td>
+    </tr>
+    <tr>
+      <td><code>ble_client.py</code></td>
+      <td>Handles BLE sending and also provides a terminal simulation mode.</td>
+    </tr>
+    <tr>
+      <td><code>web_api.py</code></td>
+      <td>Provides the online upload API.</td>
+    </tr>
+    <tr>
+      <td><code>frontend/</code></td>
+      <td>Contains the web dashboard for upload and result viewing.</td>
+    </tr>
+    <tr>
+      <td><code>benchmark.py</code> and <code>benchmark_results.csv</code></td>
+      <td>Measure OCR accuracy on sample images.</td>
+    </tr>
+  </table>
+
+  <h2>4. How The Project Works</h2>
+  <p>The project follows this flow:</p>
+  <ul>
+    <li><strong>Step 1: Capture.</strong> It gets an image from a file, a webcam, or a planned BLE camera source.</li>
+    <li><strong>Step 2: Preprocess.</strong> It improves the image using grayscale conversion, contrast improvement, denoising, deskewing, thresholding, and resizing.</li>
+    <li><strong>Step 3: OCR.</strong> It reads the text from the cleaned image using Tesseract OCR.</li>
+    <li><strong>Step 4: Retry if needed.</strong> If OCR returns almost nothing, it retries with a different OCR page mode.</li>
+    <li><strong>Step 5: Refine with LLM.</strong> If enabled, it sends the OCR text to Gemini to correct mistakes and translate to Tamil.</li>
+    <li><strong>Step 6: Local translation.</strong> If the LLM step is skipped or fails, it uses language detection and then tries online translation or a local fallback dictionary.</li>
+    <li><strong>Step 7: Encode.</strong> It converts the final text into a vibration command sequence.</li>
+    <li><strong>Step 8: Vibrate.</strong> It simulates the pattern in the terminal or can send data through BLE to hardware.</li>
+  </ul>
+
+  <h2>5. What Result The Project Gives</h2>
+  <p>
+    The expected result is: image text becomes Tamil text, and then Tamil text becomes a list of
+    5-bit vibration commands for a Braille-like glove or tactile device.
+  </p>
+  <p>
+    In a real test on <code>test_images/test_english_1.png</code>, the pipeline successfully:
+  </p>
+  <ul>
+    <li>Read the English text from the image.</li>
+    <li>Produced a Tamil text result using the offline fallback translation.</li>
+    <li>Generated 153 vibration commands.</li>
+    <li>Ran the vibration output in terminal simulation mode.</li>
+  </ul>
+  <p>
+    So the main idea of the project works: image to text, text to translated text, and translated text to vibration sequence.
+  </p>
+
+  <h2>6. Verification Results</h2>
+  <table>
+    <tr>
+      <th>Check</th>
+      <th>Result</th>
+    </tr>
+    <tr>
+      <td>Tesseract installed</td>
+      <td class="good">Yes</td>
+    </tr>
+    <tr>
+      <td>Python dependencies for core backend found</td>
+      <td class="good">Yes</td>
+    </tr>
+    <tr>
+      <td>Pytest unit tests</td>
+      <td class="good">34 tests passed</td>
+    </tr>
+    <tr>
+      <td>Backend pipeline on sample image</td>
+      <td class="good">Runs successfully in offline fallback mode</td>
+    </tr>
+    <tr>
+      <td>FastAPI app routes</td>
+      <td class="good">Present</td>
+    </tr>
+    <tr>
+      <td>Frontend build</td>
+      <td class="bad">Failed locally due Vite/SWC process error</td>
+    </tr>
+    <tr>
+      <td>LLM refine step</td>
+      <td class="bad">Integrated in code but not working in current setup</td>
+    </tr>
+  </table>
+
+  <h2>7. Does It Work Offline?</h2>
+  <p class="warn">Answer: Partly yes.</p>
+  <ul>
+    <li>OCR preprocessing and OCR reading can work offline if Tesseract is installed.</li>
+    <li>The local fallback dictionary allows a basic offline translation path.</li>
+    <li>The vibration simulation works offline in the terminal.</li>
+    <li>The real BLE camera capture is not finished. BLE capture mode is still a stub.</li>
+    <li>The real BLE send function exists, but the project currently uses terminal simulation in the main pipeline.</li>
+  </ul>
+  <p>
+    Final offline conclusion: the core demo flow works offline in a limited way, but full hardware support is not complete.
+  </p>
+
+  <h2>8. Does It Work Online?</h2>
+  <p class="warn">Answer: Partly yes.</p>
+  <ul>
+    <li>The project has an online backend using FastAPI.</li>
+    <li>The backend exposes routes like <code>/</code> and <code>/upload-book</code>.</li>
+    <li>The project has a React frontend that is designed to upload files to the backend.</li>
+    <li>However, the frontend build failed in this environment because of a local Vite/SWC error.</li>
+    <li>The online translation library is also not healthy in the current setup because <code>googletrans</code> is failing to initialize.</li>
+  </ul>
+  <p>
+    Final online conclusion: the online architecture exists, but it is not fully stable in the current environment.
+  </p>
+
+  <h2>9. Is LLM Integrated?</h2>
+  <p class="good">Answer: Yes, an LLM is integrated in the code.</p>
+  <ul>
+    <li>The file <code>agents/refine.py</code> uses Gemini through <code>google.generativeai</code>.</li>
+    <li>The configuration file has <code>USE_LLM = True</code>.</li>
+    <li>The refine step is placed before the normal translation step.</li>
+    <li>The LLM is expected to fix OCR mistakes and translate the text into Tamil.</li>
+  </ul>
+  <p class="bad">Current status of the LLM: not working properly now.</p>
+  <ul>
+    <li>The API key in <code>config.py</code> is only a placeholder: <code>YOUR_GEMINI_API_KEY_HERE</code>.</li>
+    <li>The Gemini package used in the code is deprecated.</li>
+    <li>In testing, the LLM call waited a long time and then failed with a connection timeout.</li>
+  </ul>
+  <p>
+    Final LLM conclusion: yes, LLM integration is present in code, but it is not operational in the current setup.
+  </p>
+
+  <h2>10. Important Problems Found</h2>
+  <ul>
+    <li><strong>Tamil encoding mismatch after local translation:</strong> after local translation, the state language remains <code>english</code>, so Tamil output is encoded using the English path. This causes many unknown Tamil characters to fall back to a default buzz pattern instead of proper Tamil mapping.</li>
+    <li><strong>LLM configuration problem:</strong> the Gemini key is not set and the package is outdated.</li>
+    <li><strong>Google translation problem:</strong> <code>googletrans</code> is installed but fails because of an <code>httpcore</code> compatibility issue.</li>
+    <li><strong>BLE capture not complete:</strong> BLE capture mode is still marked as not implemented.</li>
+    <li><strong>Frontend build problem:</strong> the React app did not build successfully in this local environment.</li>
+    <li><strong>Windows console Unicode issue:</strong> Tamil printing can fail unless output encoding is set to UTF-8.</li>
+  </ul>
+
+  <h2>11. Benchmark Result From Existing Project Data</h2>
+  <p>
+    The file <code>benchmark_results.csv</code> shows mixed OCR quality. One sample image scored around 56.25%,
+    another scored 10.53%, mixed text scored 37.5%, and the Tamil samples scored 0%.
+  </p>
+  <p>
+    This means the project idea is working, but the OCR quality, Tamil handling, and end-to-end reliability still need improvement.
+  </p>
+
+  <h2>12. Final Conclusion</h2>
+  <p>
+    BrailleAir is a meaningful assistive technology project with a clear and useful purpose.
+    It already has a full processing pipeline, a web API, a frontend, a Braille encoding layer,
+    and optional AI integration.
+  </p>
+  <p>
+    The project is <strong>partially working</strong>. The offline core demo works in a basic form.
+    The online structure exists, but it is not fully reliable in the current environment.
+    The LLM is integrated, but it is <strong>not working correctly now</strong>.
+  </p>
+  <p>
+    In simple words: the project is a good working prototype, not a finished production-ready system.
+  </p>
+
+  <p class="small">
+    This report is based on code inspection, local verification, unit test execution, pipeline execution on a sample image,
+    and the benchmark file already present in the project.
+  </p>
+</body>
+</html>

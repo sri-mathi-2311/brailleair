@@ -1,11 +1,12 @@
 import pytesseract
 from PIL import Image
 import config
+import pytest
 
 # Configure pytesseract to use the exact exe path from config
 pytesseract.pytesseract.tesseract_cmd = config.TESSERACT_CMD
 
-def test_image(image_path, lang):
+def run_ocr_smoke(image_path, lang):
     print(f"\n--- Testing {image_path} (lang='{lang}') ---")
     try:
         img = Image.open(image_path)
@@ -20,6 +21,16 @@ def test_image(image_path, lang):
     except Exception as e:
         print(f"Error: {e}")
 
+@pytest.mark.parametrize(
+    ("image_path", "lang"),
+    [
+        ("test_images/test_english_1.png", "eng"),
+        ("test_images/test_tamil_1.png", "tam"),
+    ],
+)
+def test_image_runs_without_error(image_path, lang):
+    run_ocr_smoke(image_path, lang)
+
 if __name__ == "__main__":
-    test_image("test_images/test_english_1.png", "eng")
-    test_image("test_images/test_tamil_1.png", "tam")
+    run_ocr_smoke("test_images/test_english_1.png", "eng")
+    run_ocr_smoke("test_images/test_tamil_1.png", "tam")

@@ -99,6 +99,40 @@ TAMIL_CONSONANTS: Dict[str, List[int]] = {
 # Combined Tamil map for lookup
 TAMIL_BRAILLE: Dict[str, List[int]] = {**TAMIL_VOWELS, **TAMIL_CONSONANTS}
 
+# Additional Tamil letters commonly produced by OCR/translation.
+# We intentionally keep the Day 2 core maps unchanged for compatibility.
+TAMIL_EXTENDED: Dict[str, List[int]] = {
+    'ர': [1, 1, 1, 0, 1],
+    'ல': [1, 1, 1, 0, 0],
+    'ள': [0, 0, 1, 1, 0],
+    'ழ': [0, 0, 1, 1, 1],
+    'வ': [0, 0, 1, 1, 0],
+    'ன': [1, 0, 1, 1, 0],
+    'ற': [1, 1, 1, 0, 1],
+    'ஞ': [1, 1, 0, 1, 1],
+    'ஹ': [1, 1, 0, 0, 1],
+    'ஜ': [0, 1, 0, 1, 1],
+    'ஸ': [0, 1, 1, 1, 0],
+    'ஷ': [1, 1, 0, 1, 0],
+}
+
+# Tamil combining vowel marks normalized to independent vowels for 5-dot output.
+TAMIL_VOWEL_SIGNS_TO_VOWELS: Dict[str, str] = {
+    'ா': 'ஆ',
+    'ி': 'இ',
+    'ீ': 'ஈ',
+    'ு': 'உ',
+    'ூ': 'ஊ',
+    'ெ': 'எ',
+    'ே': 'ஏ',
+    'ை': 'ஐ',
+    'ொ': 'ஒ',
+    'ோ': 'ஓ',
+    'ௌ': 'ஔ',
+}
+
+TAMIL_SKIP_SIGNS = {'்', 'ஃ', '\u200c', '\u200d'}
+
 # ---------------------------------------------------------------------------
 # 3. Punctuation, digits 0–9, space
 # ---------------------------------------------------------------------------
@@ -164,11 +198,26 @@ def encode_text(text: str, lang: str = "en") -> List[Dict]:
     Returns:
         List of dicts with pin instructions for each character.
     """
-    lookup = TAMIL_BRAILLE if lang == "ta" else BRAILLE_MAP
+    if lang == "ta":
+        lookup = {
+            **TAMIL_BRAILLE,
+            **TAMIL_EXTENDED,
+            **PUNCTUATION,
+            **DIGIT_MAP,
+        }
+    else:
+        lookup = BRAILLE_MAP
     result: List[Dict] = []
     in_number = False
 
     for ch in text:
+        # --- Normalize Tamil combining signs to stable encodable symbols ---
+        if lang == "ta":
+            if ch in TAMIL_SKIP_SIGNS:
+                continue
+            if ch in TAMIL_VOWEL_SIGNS_TO_VOWELS:
+                ch = TAMIL_VOWEL_SIGNS_TO_VOWELS[ch]
+
         # --- Space handling ---
         if ch == ' ':
             in_number = False
@@ -181,7 +230,7 @@ def encode_text(text: str, lang: str = "en") -> List[Dict]:
             continue
 
         # --- Digit handling (prefix with NUMBER_MARKER once) ---
-        if ch.isdigit():
+        if ch.isdigit() and ch in DIGIT_MAP:
             if not in_number:
                 result.append({
                     'char': '#',

@@ -1,0 +1,6 @@
+image_file,expected_text,ocr_output,word_match_%
+test_english_1.png,The quick brown fox jumps over...,The quick brown fox jumps over...,56.25
+test_english_2.png,Hello World. This is a very cl...,India is a diverse country wit...,10.53
+test_mixed_1.png,Welcome to BarileAir System,Welcome to BarileAir System. O...,37.5
+test_tamil_1.png,இது ஒரு தமிழ் உரை,வணககம. இத தமழ மழ சதண பககம. தமழ...,0.0
+test_tamil_2.png,வணக்கம் உலகம்,சனன: தமழகததல எதரவரம சடடமனறத _-...,0.0

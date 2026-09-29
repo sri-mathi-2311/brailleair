@@ -25,6 +25,15 @@ MAX_RETRY = config.MAX_RETRY
 CONFIDENCE_THRESHOLD = config.OCR_CONF_THRESHOLD
 
 
+def _safe_preview(text: str) -> str:
+    """Return a console-safe preview for Windows terminals."""
+    try:
+        text.encode(sys.stdout.encoding or "utf-8")
+        return text
+    except Exception:
+        return text.encode("ascii", errors="replace").decode("ascii")
+
+
 # ---------------------------------------------------------------------------
 # 1. Primary OCR call
 #    --psm 6: uniform block of text
@@ -96,13 +105,11 @@ def _confidence_filter(image: np.ndarray, lang: str = "eng",
 def _post_clean(text: str) -> str:
     """
     Clean OCR output:
-    - Strip characters not in the Braille map (keep alphanumeric + basic punct)
+    - Keep alphanumeric + basic punct + Tamil characters
     - Collapse multiple spaces and newlines
     """
-    # Keep only word chars, whitespace, and basic punctuation
-    clean = re.sub(r"[^\w\s.,!?'\-:;()\"/]", "", text)
     # Collapse multiple whitespace into single space
-    clean = re.sub(r"\s+", " ", clean).strip()
+    clean = re.sub(r"\s+", " ", text).strip()
     logger.info(f"[OCR] Post-clean: {len(clean)} chars")
     return clean
 
@@ -142,10 +149,33 @@ def run(state: dict) -> dict:
     print(f"[OCR] Attempt {retry_count + 1} (psm={psm}, lang={lang})")
 
     # Step 1: Primary OCR extraction
-    raw = _ocr_extract(image, lang=lang, psm=psm)
+    used_fallback = False
+    try:
+        raw = _ocr_extract(image, lang=lang, psm=psm)
+    except pytesseract.pytesseract.TesseractNotFoundError:
+        # Graceful fallback when Tesseract is not installed on the host.
+        # Use a canned sample if available (helpful for local dry-runs).
+        used_fallback = True
+        sample_path = os.path.join(os.path.dirname(__file__), "..", "web_uploads", "sample_online.txt")
+        sample_path = os.path.normpath(sample_path)
+        print("[OCR] Tesseract not found — falling back to sample text for dry-run.")
+        try:
+            with open(sample_path, "r", encoding="utf-8") as f:
+                raw = f.read()
+        except Exception:
+            raw = (
+                "The quick brown fox jumps over the lazy dog. "
+                "Sample fallback OCR text used because Tesseract is unavailable."
+            )
 
     # Step 2: Confidence filter
-    filtered = _confidence_filter(image, lang=lang, psm=psm)
+    # If we used a fallback (no Tesseract), skip confidence filtering entirely.
+    if used_fallback:
+        filtered = raw
+    else:
+        # Lower threshold for Tamil as Tesseract often gives lower confidence for it
+        effective_threshold = CONFIDENCE_THRESHOLD if "tam" not in lang else 30
+        filtered = _confidence_filter(image, lang=lang, psm=psm, threshold=effective_threshold)
 
     # Step 3: Retry logic — if filtered is empty
     if not filtered.strip():
@@ -156,15 +186,21 @@ def run(state: dict) -> dict:
                   f"-> routing back to preprocess")
         else:
             print(f"[OCR] Empty result after {MAX_RETRY} attempts, "
-                  f"proceeding with raw text")
+                  f"proceeding with raw text (no confidence filter)")
             # Fallback: use raw text even without confidence filtering
             state["raw_text"] = _post_clean(raw)
         return state
 
     # Step 4: Post-clean
     cleaned = _post_clean(filtered)
+    if not cleaned.strip() and raw.strip():
+        # if post-clean stripped everything but raw had something, use raw
+        cleaned = _post_clean(raw)
+    
     state["raw_text"] = cleaned
-    print(f"[OCR] Result: '{cleaned[:80]}{'...' if len(cleaned) > 80 else ''}'")
+    preview = _safe_preview(cleaned[:80])
+    suffix = "..." if len(cleaned) > 80 else ""
+    print(f"[OCR] Result: '{preview}{suffix}'")
 
     return state
 
